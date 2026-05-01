@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Task status</title>
+</head>
+<body>
+    <h2>Task Manage</h2>
+    <input type="text" id="taskInput" placeholder="enter task">
+    <button onclick="addTask()">Add Task</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        const API="http://localhost:5000/tasks";
+
+
+        async function loadTasks() {
+            const res =await fetch(API);
+            const tasks =await res.json();
+            const list =document.getElementById("taskList");
+            list.innerHTML="";
+
+            tasks.forEach(t =>{
+                const li=document.createElement("li");
+
+                li.innerHTML=`${t.title}-${t.status}
+                <button onclick="updateTask('${t._id}','${t.status}')">Update</button>
+                <button onclick="deleteTask('${t._id}','${t.status}')">delete</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+    async function addTask(){
+        alert("task Added!!");
+        const input= document.getElementById("taskInput");
+        if(!input.value) return;
+        await fetch (API,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ title: input.value })
+    })
+    input.value="",loadTasks();
+    }
+   //update
+    async function updateTask(id,status){
+        const newStatus = status === "Pending" ? "Completed" : "Pending";
+        await fetch(API + "/"+id,{
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ status: newStatus })
+  });loadTasks();
+}
+        //del
+        async function deleteTask(id) {
+            await fetch(API + "/" + id,{method:"delete"})
+            loadTasks();
+        }
+    
+    </script>
+</body>
+</html>
